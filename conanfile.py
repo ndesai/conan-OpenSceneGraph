@@ -9,10 +9,8 @@ class OpenSceneGraphConan(ConanFile):
     ZIP_FOLDER_NAME = "OpenSceneGraph-OpenSceneGraph-%s" % version
     generators = "cmake"
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False], "include_pdbs": [True, False], "cygwin_msvc": [True, False],
-               "no_gmock": [True, False], "no_main": [True, False], "fpic": [True, False]}
-    default_options = ("shared=True", "include_pdbs=False", "cygwin_msvc=False",
-                       "no_gmock=False", "no_main=False", "fpic=False")
+    options = { "shared": [True, False] }
+    default_options = ("shared=True")
     exports_sources = "CMakeLists.txt"
     url = "https://github.com/ndesai/conan-OpenSceneGraph"
     license = "https://github.com/openscenegraph/OpenSceneGraph/blob/master/LICENSE.txt"
@@ -36,14 +34,14 @@ class OpenSceneGraphConan(ConanFile):
         files.mkdir("_build")
         with tools.chdir("_build"):
             cmake = CMake(self)
-            cmake.configure(build_dir=".", source_dir="../")
+            cmake.configure(build_dir=".", source_dir="../%s" % self.ZIP_FOLDER_NAME)
             cmake.build(build_dir=".")
 
     def package(self):
         # Copy the license files
         self.copy("license*", src="%s/" % self.ZIP_FOLDER_NAME, dst=".", ignore_case=True, keep_path=False)
         # Copying headers
-        self.copy(pattern="*.h", dst="include", src="%s/include" % self.ZIP_FOLDER_NAME, keep_path=True)
+        self.copy(pattern="*.h", dst="include", src="%s/include" % self.ZIP_FOLDER_NAME, keep_path=False)
 
         # Copying static and dynamic libs
         self.copy(pattern="*.a", dst="lib", src=".", keep_path=False)
@@ -57,4 +55,5 @@ class OpenSceneGraphConan(ConanFile):
             self.copy(pattern="*.pdb", dst="lib", src=".", keep_path=False)
 
     def package_info(self):
+        self.cpp_info.includedirs = ['include']
         self.cpp_info.libs = ["osg", "osgVolume"]
